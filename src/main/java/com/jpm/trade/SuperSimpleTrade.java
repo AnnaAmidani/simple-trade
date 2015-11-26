@@ -17,7 +17,7 @@ import com.jpm.trade.util.TradeUtil;
 
 /**
  * 
- * 
+ * @author Anna Amidani
  */
 public class SuperSimpleTrade {
 
