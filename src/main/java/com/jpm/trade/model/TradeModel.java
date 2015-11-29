@@ -1,7 +1,10 @@
 package com.jpm.trade.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+
 import org.joda.time.DateTime;
+
 import com.jpm.trade.util.OperationType;
 
 
@@ -14,7 +17,7 @@ public class TradeModel implements Serializable{
 	private DateTime endTime;
 	private OperationType operationType;
 	private int sharesQnt;
-	private double stockPrice;
+	private BigDecimal stockPrice;
 	
 
 	
@@ -54,10 +57,10 @@ public class TradeModel implements Serializable{
 	public void setSharesQnt(int sharesQnt) {
 		this.sharesQnt = sharesQnt;
 	}
-	public double getStockPrice() {
+	public BigDecimal getStockPrice() {
 		return stockPrice;
 	}
-	public void setStockPrice(double stockPrice) {
+	public void setStockPrice(BigDecimal stockPrice) {
 		this.stockPrice = stockPrice;
 	}
 	

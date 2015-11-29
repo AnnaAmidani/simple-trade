@@ -1,18 +1,20 @@
 package com.jpm.trade.service;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.List;
 
-import org.joda.time.DateTime;
-import org.joda.time.Interval;
+import org.apache.commons.collections.CollectionUtils;
 
 import com.jpm.trade.model.StockModel;
 import com.jpm.trade.model.TradeModel;
 
 public class StockCalculatorServiceImpl implements StockCalculatorService {
 
+	private static final MathContext PRECISION = MathContext.DECIMAL128;
 	private static StockCalculatorServiceImpl instance;
 
-	public static StockCalculatorServiceImpl getInstance() {
+	public static StockCalculatorService getInstance() {
 		if (instance == null) {
 			instance = new StockCalculatorServiceImpl();
 		}
@@ -24,61 +26,49 @@ public class StockCalculatorServiceImpl implements StockCalculatorService {
 	 * @param list
 	 * @return
 	 */
-	public double getGeometricMean(List<StockModel> list) {
-		double gm = 1;
+	public BigDecimal calculateGeometricMean(List<StockModel> list) {
+		BigDecimal gm = new BigDecimal(1);
 		for (StockModel model : list) {
-			gm *= model.getParValue();
+			gm = gm.multiply(model.getParValue());
 		}
-		return Math.pow(gm, 1.0 / list.size());
+		return new BigDecimal(Math.pow(gm.doubleValue(), 1.0 / list.size()));
 	}
 
 	/**
 	 * 
 	 */
-	public double getDividendYeld(StockModel stock) {
-		double dividendYeld = 0;
+	public BigDecimal calculateDividendYeld(StockModel stock) {
 		switch (stock.getType()) {
 		case COMMON:
-			dividendYeld = stock.getLastDividend() / stock.getTickerPrice();
-			break;
+			return new BigDecimal(stock.getLastDividend()).divide(stock.getTickerPrice(), PRECISION);
 		case PREFERRED:
-			dividendYeld = (stock.getFixedDividend() * stock.getParValue())
-					/ stock.getTickerPrice();
-			break;
-		default:
+			BigDecimal fixedDividend = new BigDecimal(stock.getFixedDividend());
+			return fixedDividend.multiply(stock.getParValue()).divide(stock.getTickerPrice(), PRECISION);
 		}
-
-		return dividendYeld;
+		throw new IllegalArgumentException("The stock type " + stock.getType() + " is not supported.");
 	}
 
 	/**
 	 * 
 	 * @return
 	 */
-	public double getPeRatio(StockModel stock) {
-		return stock.getTickerPrice() / stock.getLastDividend();
+	public BigDecimal calculatePeRatio(StockModel stock) {
+		return stock.getTickerPrice().divide(new BigDecimal(stock.getLastDividend()), MathContext.DECIMAL128);
 	}
 
 	/**
 	 * 
 	 */
-	public double getStockPrice(List<TradeModel> list) {
-
-		double totalPriceForQuantity = 0;
-		int totalQuantity = 0;
-
-		for(TradeModel trade : list) {
-			DateTime now = new DateTime();
-			DateTime minutesAgo = now.minusMinutes(15);
-			Interval interval = new Interval(minutesAgo, now);
-			boolean intervalContainsEndOfTrade = interval.contains( trade.getEndTime() );
-			if(intervalContainsEndOfTrade) {
-				totalPriceForQuantity += trade.getStockPrice() * trade.getSharesQnt();
-				totalQuantity += trade.getSharesQnt();
-			}
+	public BigDecimal calculateStockPrice(List<TradeModel> trades) {
+		if (CollectionUtils.isEmpty(trades)) {
+			return new BigDecimal(0);
 		}
-		return totalPriceForQuantity / totalQuantity;
-
-
+		BigDecimal totalPriceForQuantity = new BigDecimal(0);
+		int totalQuantity = 0;
+		for (TradeModel trade : trades) {
+			totalPriceForQuantity = totalPriceForQuantity.add(trade.getStockPrice().multiply(new BigDecimal(trade.getSharesQnt())));
+			totalQuantity += trade.getSharesQnt();
+		}
+		return totalPriceForQuantity.divide(new BigDecimal(totalQuantity), PRECISION);
 	}
 }
