@@ -5,25 +5,31 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.jpm.trade.model.StockModel;
 import com.jpm.trade.util.StockType;
+import com.jpm.trade.util.TestUtil;
 
 /**
- * Unit test for simple TradeSession.
+ * Unit test for the {@link StockStore}.
  */
 public class StockStoreTest {
 
 	StockStore stockStore = StockStoreImpl.getInstance();
 
-	@Test
-	public void testStockCreation() {
+	@Before
+	public void cleanStockStore() {
 		Assert.assertTrue(stockStore.deleteAll());
 		List<StockModel> all = stockStore.getAll();
 		Assert.assertNotNull(all);
 		Assert.assertTrue(all.isEmpty());
-		
+	}
+	
+	
+	@Test
+	public void testStockCreation() {		
 		BigDecimal parValue = new BigDecimal(10);
 		BigDecimal tickerPrice = new BigDecimal(12);
 		int lastDividend = 12;
@@ -43,15 +49,10 @@ public class StockStoreTest {
 	
 	@Test
 	public void testGetAllStock() {
-		Assert.assertTrue(stockStore.deleteAll());
+		stockStore.create(TestUtil.buildStock(new BigDecimal(10), new BigDecimal(12), 3, "ALE", StockType.COMMON));
+		stockStore.create(TestUtil.buildStock(new BigDecimal(10), new BigDecimal(12), 3, "ALE", StockType.COMMON));
+		
 		List<StockModel> all = stockStore.getAll();
-		Assert.assertNotNull(all);
-		Assert.assertTrue(all.isEmpty());
-		
-		stockStore.create(TestUtil.buildStock(new BigDecimal(10), new BigDecimal(12), 3, "ALE", StockType.COMMON));
-		stockStore.create(TestUtil.buildStock(new BigDecimal(10), new BigDecimal(12), 3, "ALE", StockType.COMMON));
-		
-		all = stockStore.getAll();
 		
 		Assert.assertNotNull(all);
 		Assert.assertEquals(2, all.size());
@@ -66,23 +67,27 @@ public class StockStoreTest {
 
 	@Test
 	public void testDeleteAllStock() {
+		stockStore.create(TestUtil.buildStock(new BigDecimal(10), new BigDecimal(12), 2, "ALE", StockType.COMMON));
+		stockStore.create(TestUtil.buildStock(new BigDecimal(10), new BigDecimal(12), 2, "ALE", StockType.COMMON));
+		
 		Assert.assertTrue(stockStore.deleteAll());
 		List<StockModel> all = stockStore.getAll();
 		Assert.assertNotNull(all);
 		Assert.assertTrue(all.isEmpty());
-		
-		stockStore.create(TestUtil.buildStock(new BigDecimal(10), new BigDecimal(12), 2, "ALE", StockType.COMMON));
-		stockStore.create(TestUtil.buildStock(new BigDecimal(10), new BigDecimal(12), 2, "ALE", StockType.COMMON));
-		
-		Assert.assertTrue(stockStore.deleteAll());
-		all = stockStore.getAll();
-		Assert.assertNotNull(all);
-		Assert.assertTrue(all.isEmpty());
 	}
 
-	@Test(expected=IllegalArgumentException.class)
-	public void testInvalidStockCreation() {
-		StockModel stock = new StockModel();
-		stockStore.create(stock);
+	@Test
+	public void testDeleteStock() {
+		StockModel stock = stockStore.create(TestUtil.buildStock(new BigDecimal(10), new BigDecimal(12), 2, "ALE", StockType.COMMON));
+		StockModel toDelete = stockStore.create(TestUtil.buildStock(new BigDecimal(10), new BigDecimal(12), 2, "ALE", StockType.COMMON));
+		
+		Assert.assertEquals(2, stockStore.getAll().size());
+		
+		StockModel deleted = stockStore.delete(toDelete);
+
+		Assert.assertEquals(1, stockStore.getAll().size());
+		Assert.assertEquals(toDelete.getId(), deleted.getId());
+		Assert.assertNotEquals(stock.getId(), deleted.getId());
+		Assert.assertEquals(stock.getId(), stockStore.getAll().get(0).getId());
 	}
 }

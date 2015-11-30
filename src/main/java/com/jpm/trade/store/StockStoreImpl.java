@@ -9,13 +9,23 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.jpm.trade.model.StockModel;
 
+/**
+ * Simplified implementation of a {@link StockStore}, to be used only for example purpose.
+ * 
+ * @author Anna Amidani
+ */
 public class StockStoreImpl implements StockStore {
 	
 	private static StockStore instance;
 
 	private Map<Long,StockModel> store = new LinkedHashMap<Long,StockModel>();
 	private long lastId = 0;
-	
+
+	/**
+	 * Returns an instance of a {@link StockStore}.
+	 * 
+	 * @return an instance of a {@link StockStore}.
+	 */
 	public static StockStore getInstance() {
 		if (instance == null) {
 			instance = new StockStoreImpl();

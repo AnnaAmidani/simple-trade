@@ -22,6 +22,7 @@ import com.jpm.trade.util.TradeConstants;
 import com.jpm.trade.util.TradeUtil;
 
 /**
+ * Main class that simulates a trade session.
  * 
  * @author Anna Amidani
  */
@@ -38,13 +39,14 @@ public class TradeSession {
 
 		initStocksStore(stockStore);
 
-		/**
-		 * For each stock: 
+		/*
+		 * For each stock:
+		 * 
 		 * i.   Calculate the dividend yield 
 		 * ii.  Calculate the P/E Ratio 
 		 * iii. Record a trade, with timestamp, quantity of shares, buy or sell indicator and price 
 		 * iv.  Calculate Stock Price based on trades recorded in past 15 minutes
-		 **/
+		 */
 		List<StockModel> stocksList = stockStore.getAll();
 		for (StockModel stock : stocksList) {
 			logger.info("#############################");
@@ -67,8 +69,7 @@ public class TradeSession {
 			logger.info("\n\n");
 		}
 
-		/**
-		 * 
+		/*
 		 * v. Calculate the All Share Index using the geometric mean of prices
 		 * for all stocks (calculation is made considering all the trades
 		 * occurred on a single stock during trading session)
@@ -82,31 +83,33 @@ public class TradeSession {
 		}
 
 		List<StockModel> allStocks = stockStore.getAll();
-		BigDecimal geometricMean = stockCalculatorService.calculateGeometricMean(allStocks);
+		BigDecimal geometricMean = stockCalculatorService.calculateAllShareIndex(allStocks);
 		logger.info("#############################");
 		logger.info("All Share Index: " + TradeUtil.formatGBP(geometricMean));
 		logger.info("#############################");
 	}
 
 	/**
+	 * Initialize the stock store adding some stock entities to use as example.
 	 * 
-	 * @param store
+	 * @param store the stock store.
 	 */
 	private static void initStocksStore(StockStore store) {
 		logger.info("Initializing the store with a set of stocks");
-		store.create(buildEntity(1.6f, 8,  new BigDecimal("50.09"),  new BigDecimal("51.38"),  TradeConstants.FERRARI_SYM,	  StockType.COMMON));
-		store.create(buildEntity(1.2f, 13, new BigDecimal("5.42"),   new BigDecimal("4.95"),   TradeConstants.UNICREDIT_SYM, StockType.COMMON));
-		store.create(buildEntity(0.4f, 7,  new BigDecimal("40.21"),  new BigDecimal("42.96"),  TradeConstants.COKE_SYM, 	  StockType.PREFERRED));
-		store.create(buildEntity(1.3f, 25, new BigDecimal("706.12"), new BigDecimal("702.50"), TradeConstants.GOOGLE_SYM, 	  StockType.PREFERRED));
-		store.create(buildEntity(1.3f, 25, new BigDecimal("117.75"), new BigDecimal("119.20"), TradeConstants.APPLE_SYM, 	  StockType.PREFERRED));
-		store.create(buildEntity(2.1f, 7,  new BigDecimal("138.70"), new BigDecimal("138.60"), TradeConstants.IBM_SYM, 		  StockType.COMMON));
-		store.create(buildEntity(1.7f, 9,  new BigDecimal("19.11"),  new BigDecimal("22.30"),  TradeConstants.GUESS_SYM, 	  StockType.COMMON));
+		store.create(buildStockEntity(1.6f, 8,  new BigDecimal("50.09"),  new BigDecimal("51.38"),  TradeConstants.FERRARI_SYM,	  StockType.COMMON));
+		store.create(buildStockEntity(1.2f, 13, new BigDecimal("5.42"),   new BigDecimal("4.95"),   TradeConstants.UNICREDIT_SYM, StockType.COMMON));
+		store.create(buildStockEntity(0.4f, 7,  new BigDecimal("40.21"),  new BigDecimal("42.96"),  TradeConstants.COKE_SYM, 	  StockType.PREFERRED));
+		store.create(buildStockEntity(1.3f, 25, new BigDecimal("706.12"), new BigDecimal("702.50"), TradeConstants.GOOGLE_SYM, 	  StockType.PREFERRED));
+		store.create(buildStockEntity(1.3f, 25, new BigDecimal("117.75"), new BigDecimal("119.20"), TradeConstants.APPLE_SYM, 	  StockType.PREFERRED));
+		store.create(buildStockEntity(2.1f, 7,  new BigDecimal("138.70"), new BigDecimal("138.60"), TradeConstants.IBM_SYM, 		  StockType.COMMON));
+		store.create(buildStockEntity(1.7f, 9,  new BigDecimal("19.11"),  new BigDecimal("22.30"),  TradeConstants.GUESS_SYM, 	  StockType.COMMON));
 	}
 
 	/**
+	 * Simulate the loading process of the trades of a given stock.
 	 * 
-	 * @param store
-	 * @param stock
+	 * @param store the trade store
+	 * @param stock the stock
 	 */
 	private static void loadStockTrades(TradeStore store, StockModel stock) {
 
@@ -125,15 +128,17 @@ public class TradeSession {
 	}
 
 	/**
+	 * Builds and returns a stock model.
 	 * 
-	 * @param fixedDividend
-	 * @param lastDividend
-	 * @param parVaue
-	 * @param symbol
-	 * @param type
-	 * @return the model
+	 * @param fixedDividend the fixed dividend of the stock.
+	 * @param lastDividend the last dividend of the stock.
+	 * @param parValue the par value of the stock.
+	 * @param symbol the symbol of the stock.
+	 * @param type the type of the stock.
+	 * 
+	 * @return the built stock model.
 	 */
-	private static StockModel buildEntity(float fixedDividend, int lastDividend, BigDecimal parValue, BigDecimal tickerPrice, String symbol, StockType type) {
+	private static StockModel buildStockEntity(float fixedDividend, int lastDividend, BigDecimal parValue, BigDecimal tickerPrice, String symbol, StockType type) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("adding stock => symbol:").append(symbol);
 		sb.append("| fixedDividend:").append(fixedDividend);
@@ -153,13 +158,15 @@ public class TradeSession {
 	}
 
 	/**
+	 * Builds and returns a trade model.
 	 * 
-	 * @param startTime
-	 * @param operationType
-	 * @param sharesQnt
-	 * @param endTime
-	 * @param stockPrice
-	 * @return the model
+	 * @param startTime the start time of the trade.
+	 * @param operationType the operation type of the trade.
+	 * @param sharesQnt the share quantity of the trade.
+	 * @param endTime the end time of the trade.
+	 * @param stockPrice the stock price of the trade.
+	 * 
+	 * @return the built trade model.
 	 */
 	private static TradeModel buildTradeEntity(long stockRef, DateTime startTime, OperationType operationType, int sharesQnt, DateTime endTime, BigDecimal stockPrice) {
 		StringBuilder sb = new StringBuilder();

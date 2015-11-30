@@ -12,6 +12,11 @@ import com.google.common.collect.FluentIterable;
 import com.jpm.trade.model.StockModel;
 import com.jpm.trade.model.TradeModel;
 
+/**
+ * Simplified implementation of a {@link TradeStore}, to be used only for example purpose.
+ * 
+ * @author Anna Amidani
+ */
 public class TradeStoreImpl implements TradeStore {
 	
 	private static TradeStore instance;
@@ -19,6 +24,11 @@ public class TradeStoreImpl implements TradeStore {
 	private Map<Long,TradeModel> store = new LinkedHashMap<Long,TradeModel>();
 	private long lastId = 0;
 	
+	/**
+	 * Returns an instance of a {@link TradeStore}.
+	 * 
+	 * @return an instance of a {@link TradeStore}.
+	 */
 	public static TradeStore getInstance() {
 		if (instance == null) {
 			instance = new TradeStoreImpl();
@@ -74,7 +84,8 @@ public class TradeStoreImpl implements TradeStore {
 			throw new IllegalArgumentException();
 		}
 		model.setId(++lastId);
-		return store.put(model.getId(), model);
+		store.put(model.getId(), model);
+		return store.get(model.getId());
 	}
 
 	/* (non-Javadoc)
@@ -99,8 +110,4 @@ public class TradeStoreImpl implements TradeStore {
 		}
 		return store.remove(model.getId());
 	}
-
-
-
-
 }
