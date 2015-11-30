@@ -1,7 +1,7 @@
-# simple-trade
+##*Trading session simulator*
+A sample library for managing and executing trading operations on a set of stocks.
 
-Trading session simulator. 
-A sample library for managing and executing stocks operations.
+This program executes some common calculations on a set of stocks based on a random number of sell or buy trades.
 
 To run use:
-java -jar super-simple-trade-0.0.1-SNAPSHOT.jar 
+java -jar super-simple-trade.jar
